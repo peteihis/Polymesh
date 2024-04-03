@@ -5925,18 +5925,13 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                             newFaceVert[j][k] = fv[k];
                             if (fv[k] < vertices.length)
                             {
-                                boolean found = false;
                                 for (int l = 0; l < oldFaceVert[orFace].length; l++)
                                 {
                                     if (oldFaceVert[orFace][l] == fv[k])
                                     {
                                         newFaceVertFaceRef[j][k] = orFace;
                                         newFaceVertIndexRef[j][k] = l;
-                                        found = true;
                                     }
-                                }
-                                if (!found) {
-                                    System.out.println("Not found!!");
                                 }
                             }
                             else
@@ -6000,18 +5995,13 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                                 double[] coef = vertParamInfo[newFaceVert[j][k] - vertices.length].coef;
                                 for (int l = 0; l < vf.length; ++l)
                                 {
-                                    boolean found = false;
                                     for (int m = 0; m < oldFaceVert[orFace].length; m++)
                                     {
                                         if (oldFaceVert[orFace][m] == vf[l])
                                         {
                                             val += coef[l] * fvpv.getValue(orFace, m);
-                                            found = true;
                                             break;
                                         }
-                                    }
-                                    if (!found) {
-                                        System.out.println("Not found!!");
                                     }
                                 }
                                 newval[j][k] = val;
