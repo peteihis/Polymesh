@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2007 by Francois Guillet
- *  Changes copyright © 2022 by Maksim Khramov
+ *  Changes copyright © 2022-2024 by Maksim Khramov
  *  Some code clean up 2023 by Petri Ihalainen
  *
  *  This program is free software; you can redistribute it and/or modify it under the
@@ -3009,10 +3009,10 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                                 vertex = v1.get(j);
                                 break;
                             case 1:
-                                vertex = v1.get(j);
+                                vertex = v2.get(j);
                                 break;
                             case 2:
-                                vertex = v1.get(j);
+                                vertex = v3.get(j);
                                 break;
                             }
                             int pmeFace = faceInfo.get(j);
@@ -5926,7 +5926,7 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                                     }
                                 }
                                 if (!found) {
-                                    System.out.println("Pas trouv !!");
+                                    System.out.println("Not found!!");
                                 }
                             } else {
                                 newFaceVertFaceRef[j][k] = -1;
@@ -5984,7 +5984,7 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                                         }
                                     }
                                     if (!found) {
-                                        System.out.println("Pas trouv !!");
+                                        System.out.println("Not found!!");
                                     }
                                 }
                                 newval[j][k] = val;
