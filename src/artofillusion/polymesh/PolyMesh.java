@@ -2,6 +2,7 @@
  *  Copyright © 2005-2007 by Francois Guillet
  *  Changes copyright © 2022-2024 by Maksim Khramov
  *  Some code clean up 2023 by Petri Ihalainen
+ *  Changes copyright © 2024 by Petri Ihalainen
  *
  *  This program is free software; you can redistribute it and/or modify it under the
  *  terms of the GNU General Public License as published by the Free Software
@@ -1306,8 +1307,8 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
      */
 
     @Override
-    public RenderingMesh getRenderingMesh(double tol, boolean interactive,
-            ObjectInfo info) {
+    public RenderingMesh getRenderingMesh(double tol, boolean interactive, ObjectInfo info)
+    {
         if (interactive && cachedMesh != null)
             return cachedMesh;
         RenderingMesh rend = null;
@@ -1340,13 +1341,22 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                 return cachedMesh;
             }
         }
+
         TextureMapping texMapping = getTextureMapping();
-        vert = new Vector<>();
-        v1 = new Vector<>();
-        v2 = new Vector<>();
-        v3 = new Vector<>();
-        vertInfo = new Vector<>();
-        faceInfo = new Vector<>();
+
+        // Live duplicates in the scene will cause several simultaneous accesses to getRenderingMesh() 
+        // from RaytracerRenderer.buildScene(). That is why the next variables need to be declared in 
+        // method level. Corresponding arrangement in triangulate().
+        //
+        // getRenderingMesh() seems to be the only method that may be accessed by multithreading.
+
+        List<Integer> v1   = new Vector<>();
+        List<Integer> v2   = new Vector<>();
+        List<Integer> v3   = new Vector<>();
+        List<Vec3>    vert = new Vector<>();
+        List<VertexParamInfo> vertInfo = new Vector<>();
+        List<Integer> faceInfo         = new Vector<>();
+
         for (int i = 0; i < vertices.length; ++i) {
             vert.add(vertices[i].r);
             vertInfo.add(new VertexParamInfo(new int[] { i }, new double[] { 1.0 }));
@@ -1360,7 +1370,7 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
                 faceInfo.add(i);
 
             } else if (vf.length > 3) {
-                triangulate(vf, i, false);
+                triangulate(vf, i, false, v1, v2, v3, vert, vertInfo, faceInfo);
             }
         }
         Vec3[] vertArray = new Vec3[vert.size()];
@@ -1440,6 +1450,16 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
         
         if (interactive)
             cachedMesh = rend;
+
+        // Returninng method level values to class level for possible further use.
+
+        this.vert = vert ;
+        this.v1   = v1 ;
+        this.v2   = v2 ;
+        this.v3   = v3 ;
+        this.vertInfo = vertInfo;
+        this.faceInfo = faceInfo;
+
         return rend;
     }
 
@@ -2052,7 +2072,19 @@ public class PolyMesh extends Object3D implements Mesh, FacetedMesh {
      * @return         Face area.
      */
 
-    private double triangulate(int[] vf, int face, boolean areaOnly) {
+    private double triangulate(int[] vf, int face, boolean areaOnly)
+    {
+        // This is the class level method
+
+        return triangulate(vf, face, areaOnly, v1, v2, v3, vert, vertInfo, faceInfo);
+    }
+
+    private double triangulate(int[] vf, int face, boolean areaOnly, 
+                               List<Integer> v1, List<Integer> v2, List<Integer> v3, List<Vec3> vert, 
+                               List<VertexParamInfo> vertInfo, List<Integer> faceInfo)
+    {
+        // This method can handle method level variables. See getRederingMesh().
+
         int fe[] = null;
         if (!areaOnly)
             fe = getFaceEdges(faces[face]);
